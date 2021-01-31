@@ -1,3 +1,4 @@
+
 // 1 - pull in the HTTP server module
 const http = require('http');
 
@@ -23,12 +24,32 @@ const errorPage = `
 // 6 - this will return a random number no bigger than `max`, as a string
 // we will also doing our query parameter validation here
 const randomJoke = {
-	q: ["one", "two"],
-	a: ["one", "two"]
+	q: [
+	"What do you call a very small valentine?", 
+	"What did the dog say when he rubbed his tail on the sandpaper?",
+	"Why don't sharks like to eat clowns?",
+	"What did the fish say when be bumped his head?",
+	"What did one elevator say to the other elevator?",
+	"What does a nosey pepper do?",
+	"What do you call a cow with a twitch?",
+	"What do you call a computer that sings?",
+	"Why did the robber take a bath?",
+	"What did the 0 say to the 8?"],
+	a: [
+	"A valen-tiny!", 
+	"Ruff, Ruff!",
+	"Because they taste funny!",
+	"Dam!",
+	"I think I'm coming down with something!",
+	"Gets jalapeno business!",
+	"Beef jerky!",
+	"A-Dell!",
+	"They wanted to make a clean getaway!",
+	"Nice belt!"]
 };
 
 const getRandomJokeJSON = () => {
-	const joke = Math.floor(Math.random() * 1);
+	const joke = Math.floor(Math.random() * 10);
 	const responseObj = {
 		q: randomJoke.q[joke],
 		a: randomJoke.a[joke]
@@ -41,6 +62,9 @@ const getRandomJokeJSON = () => {
 // this time we will look at the `pathname`, and send back the appropriate page
 // note that in this course we'll be using arrow functions 100% of the time in our server-side code
 const onRequest = (request, response) => {
+	const parsedUrl = url.parse(request.url);
+	const pathname = parsedUrl.pathname;
+	
 	if(pathname == "/random-joke"){
 		response.writeHead(200, { 'Content-Type': 'application/json'});
 		response.write(getRandomJokeJSON());
@@ -50,7 +74,6 @@ const onRequest = (request, response) => {
 		response.write(errorPage);
 		response.end();
 	}
-   
 };
 
 // 8 - create the server, hook up the request handling function, and start listening on `port`
