@@ -1,6 +1,7 @@
 // 1 - pull in the HTTP server module and other moduls
 const http = require('http');
 const url = require('url');
+const query = require('querystring');
 const htmlHandler = require('./htmlResponses.js');
 const jsonHandler = require('./jsonResponses.js');
 
@@ -10,6 +11,7 @@ const port = process.env.PORT || process.env.NODE_PORT || 3000;
 // 3 - urlStruct
 const urlStruct = {
   '/random-joke': jsonHandler.getRandomJokeResponse,
+  '/random-jokes': jsonHandler.getRandomJokesResponse,
   notFound: htmlHandler.get404Response,
 };
 
@@ -19,9 +21,10 @@ const urlStruct = {
 const onRequest = (request, response) => {
   const parsedUrl = url.parse(request.url);
   const { pathname } = parsedUrl;
+  const params = query.parse(parsedUrl.query);
 
   if (urlStruct[pathname]) {
-    urlStruct[pathname](request, response);
+    urlStruct[pathname](request, response, params);
   } else {
     urlStruct.notFound(request, response);
   }
