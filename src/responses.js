@@ -28,18 +28,40 @@ const randomJoke = {
 };
 
 // validate the limit param
-function testParam(limitParam) {
+const testParam = (limitParam) => {
   let limit = Number(limitParam);
   limit = !limit ? 1 : limit;
   limit = limit < 1 ? 1 : limit;
   limit = limit > 10 ? 10 : limit;
   return limit;
-}
+};
+
+// return accepted type
+const findType = (acceptedTypes) => {
+  if (acceptedTypes[0] === 'text/xml') return 'text/xml';
+  return 'application/json';
+};
+
+// ALWAYS GIVE CREDIT - in your code comments and documentation
+// Source: https://stackoverflow.com/questions/2219526/how-many-bytes-in-a-javascript-string/29955838
+// Refactored to an arrow function by ACJ
+const getBinarySize = (string) => Buffer.byteLength(string, 'utf8');
 
 // respond function
 const respond = (request, response, content, type, statusCode) => {
   response.writeHead(statusCode, { 'Content-type': type });
   response.write(content);
+  response.end();
+};
+
+// get meta data when the server receives a head request
+const getMetaData = (request, response, content, acceptedTypes) => {
+  const type = findType(acceptedTypes);
+  const headers = {
+    'Content-type': type,
+    'Content-length': `${getBinarySize(content)}`,
+  };
+  response.writeHead(200, headers);
   response.end();
 };
 
@@ -79,7 +101,7 @@ const getRandomJokes = (limitParam = 1, acceptedTypes) => {
     return xmlResponse;
   }
 
-  // defualt 
+  // defualt
   let jsonResponse;
   const jsonResponseReturn = [];
 
@@ -94,21 +116,31 @@ const getRandomJokes = (limitParam = 1, acceptedTypes) => {
   return JSON.stringify(jsonResponseReturn);
 };
 
-const getRandomJokeResponse = (request, response, params, acceptedTypes) => {
-  if (acceptedTypes.includes('text/xml')) {
-    respond(request, response, getRandomJoke(acceptedTypes), 'text/xml', 200);
-  } else {
-    respond(request, response, getRandomJoke(acceptedTypes), 'application/json', 200);
+const getRandomJokeResponse = (request, response, acceptedTypes, httpMethod) => {
+  if (httpMethod === 'GET') {
+    respond(request, response, getRandomJoke(acceptedTypes), findType(acceptedTypes), 200);
+  } else if (httpMethod === 'HEAD') {
+    getMetaData(request, response, getRandomJoke(acceptedTypes), acceptedTypes);
   }
 };
 
-const getRandomJokesResponse = (request, response, params, acceptedTypes) => {
-  if (acceptedTypes.includes('text/xml')) {
-    respond(request, response, getRandomJokes(params.limit, acceptedTypes), 'text/xml', 200);
-  } else {
-    respond(request, response, getRandomJokes(params.limit, acceptedTypes), 'application/json', 200);
+const getRandomJokesResponse = (request, response, acceptedTypes, httpMethod, params) => {
+  if (httpMethod === 'GET') {
+    // eslint said this line was too long
+    respond(
+      request,
+      response,
+      getRandomJokes(params.limit, acceptedTypes),
+      findType(acceptedTypes),
+      200,
+    );
+  } else if (httpMethod === 'HEAD') {
+    getMetaData(request, response, getRandomJokes(params.limit, acceptedTypes), acceptedTypes);
   }
 };
 
-module.exports.getRandomJokeResponse = getRandomJokeResponse;
-module.exports.getRandomJokesResponse = getRandomJokesResponse;
+module.exports = {
+  getRandomJokeResponse,
+  getRandomJokesResponse,
+
+};
