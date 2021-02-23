@@ -1,30 +1,35 @@
 // adding underscore for shuffle
 const _ = require('underscore');
 
-// random joke object literal
-const randomJoke = {
-  q: [
-    'What do you call a very small valentine?',
-    'What did the dog say when he rubbed his tail on the sandpaper?',
-    "Why don't sharks like to eat clowns?",
-    'What did the fish say when be bumped his head?',
-    'What did one elevator say to the other elevator?',
-    'What does a nosey pepper do?',
-    'What do you call a cow with a twitch?',
-    'What do you call a computer that sings?',
-    'Why did the robber take a bath?',
-    'What did the 0 say to the 8?'],
-  a: [
-    'A valen-tiny!',
-    'Ruff, Ruff!',
-    'Because they taste funny!',
-    'Dam!',
-    "I think I'm coming down with something!",
-    'Gets jalapeno business!',
-    'Beef jerky!',
-    'A-Dell!',
-    'They wanted to make a clean getaway!',
-    'Nice belt!'],
+// random joke array
+let randomJoke = [
+  'What do you call a very small valentine?',
+  'What did the dog say when he rubbed his tail on the sandpaper?',
+  "Why don't sharks like to eat clowns?",
+  'What did the fish say when be bumped his head?',
+  'What did one elevator say to the other elevator?',
+  'What does a nosey pepper do?',
+  'What do you call a cow with a twitch?',
+  'What do you call a computer that sings?',
+  'Why did the robber take a bath?',
+  'What did the 0 say to the 8?',
+];
+
+// when using underscores shuffle feature, it didn't keep the q and a pairings intact
+// so this map uses the above array as a key to make sure it has the right a
+// I imagine this isn't the proper way to do this
+// but I wasn't sure in the moment what other ways there were
+const randomJokeMap = {
+  'What do you call a very small valentine?': 'A valen-tiny!',
+  'What did the dog say when he rubbed his tail on the sandpaper?': 'Ruff, Ruff!',
+  "Why don't sharks like to eat clowns?": 'Because they taste funny!',
+  'What did the fish say when be bumped his head?': 'Dam!',
+  'What did one elevator say to the other elevator?': "I think I'm coming down with something!",
+  'What does a nosey pepper do?': 'Gets jalapeno business!',
+  'What do you call a cow with a twitch?': 'Beef jerky!',
+  'What do you call a computer that sings?': 'A-Dell!',
+  'Why did the robber take a bath?': 'They wanted to make a clean getaway!',
+  'What did the 0 say to the 8?': 'Nice belt!',
 };
 
 // validate the limit param
@@ -71,13 +76,13 @@ const getRandomJoke = (acceptedTypes) => {
   const joke = Math.floor(Math.random() * 10);
   // client asked for xml
   if (acceptedTypes[0] === 'text/xml') {
-    const xmlResponse = `<joke><q>${randomJoke.q[joke]}</q><a>${randomJoke.a[joke]}</a></joke>`;
+    const xmlResponse = `<joke><q>${randomJoke[joke]}</q><a>${randomJokeMap[randomJoke[joke]]}</a></joke>`;
     return xmlResponse;
   }
   // defualt
   const jsonResponse = {
-    q: randomJoke.q[joke],
-    a: randomJoke.a[joke],
+    q: randomJoke[joke],
+    a: randomJokeMap[randomJoke[joke]],
   };
   return JSON.stringify(jsonResponse);
 };
@@ -86,16 +91,15 @@ const getRandomJoke = (acceptedTypes) => {
 const getRandomJokes = (limitParam = 1, acceptedTypes) => {
   // test the limit
   const limit = testParam(limitParam);
-  // shuffle the q and a
-  randomJoke.q = _.shuffle(randomJoke.q);
-  randomJoke.a = _.shuffle(randomJoke.a);
+  // shuffle the q array
+  randomJoke = _.shuffle(randomJoke);
 
   // client asked for xml
   if (acceptedTypes[0] === 'text/xml') {
     let xmlResponse = '<jokes>';
 
     for (let i = 0; i < limit; i += 1) {
-      xmlResponse = `${xmlResponse}<joke><q>${randomJoke.q[i]}</q><a>${randomJoke.a[i]}</a></joke>`;
+      xmlResponse = `${xmlResponse}<joke><q>${randomJoke[i]}</q><a>${randomJokeMap[randomJoke[i]]}</a></joke>`;
     }
     xmlResponse = `${xmlResponse} </jokes>`;
     return xmlResponse;
@@ -107,8 +111,8 @@ const getRandomJokes = (limitParam = 1, acceptedTypes) => {
 
   for (let i = 0; i < limit; i += 1) {
     jsonResponse = {
-      q: randomJoke.q[i],
-      a: randomJoke.a[i],
+      q: randomJoke[i],
+      a: randomJokeMap[randomJoke[i]],
     };
 
     jsonResponseReturn.push(jsonResponse);
